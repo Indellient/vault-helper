@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	EnvVaultAddr = "VAULT_ADDR"
+	EnvVaultAddr     = "VAULT_ADDR"
 	EnvVaultInsecure = "VAULT_INSECURE"
-	EnvVaultRoleId = "VAULT_ROLE_ID"
+	EnvVaultRoleId   = "VAULT_ROLE_ID"
 	EnvVaultSecretId = "VAULT_SECRET_ID"
-	EnvVaultToken = "VAULT_TOKEN"
+	EnvVaultToken    = "VAULT_TOKEN"
 )
 
 var (

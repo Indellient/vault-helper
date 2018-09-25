@@ -10,10 +10,10 @@ var (
 )
 
 type Secret struct {
-	Data map[string]interface{} `json:"data"`
-	LeaseDuration int `json:"lease_duration"`
-	LeaseId string `json:"lease_id"`
-	Renewable bool `json:"renewable"`
+	Data          map[string]interface{} `json:"data"`
+	LeaseDuration int                    `json:"lease_duration"`
+	LeaseId       string                 `json:"lease_id"`
+	Renewable     bool                   `json:"renewable"`
 }
 
 func (i *Secret) Get(v *VaultClient) *Secret {
@@ -23,4 +23,3 @@ func (i *Secret) Get(v *VaultClient) *Secret {
 
 	return i
 }
-
