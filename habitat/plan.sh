@@ -48,12 +48,19 @@ do_build() {
 
     # Setup dependencies
     build_line "Setting up package dependencies..."
-    for _GODEP in $( ls -1 src/*/Gopkg.toml ) ; do
-        _GOPKGDIR="$( dirname "${_GODEP}" )"
-        build_line "    --> dep ensure ${_GOPKGDIR}..."
+    for _GOPKGDIR in $( ls -1d src/* ) ; do
+        _GOPKGNAME="$( basename "${_GOPKGDIR}" )"
+
         pushd ${_GOPKGDIR} > /dev/null
-        ../../bin/dep ensure
+        if [ -e "Gopkg.toml" ] ; then
+            build_line "    --> dep ensure ${_GOPKGDIR}..."
+            ../../bin/dep ensure
+        else
+            build_line "    --> dep init ${_GOPKGDIR}..."
+            ../../bin/dep init
+        fi
         popd > /dev/null
+
     done
 
     # Run gometalinter.v2 --fast
