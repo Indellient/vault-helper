@@ -6,6 +6,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	"logger"
 	"os"
+	path "path/filepath"
 	"strconv"
 	"vault"
 )
@@ -19,14 +20,21 @@ const (
 )
 
 var (
-	app = kingpin.New(os.Args[0], fmt.Sprintf(`Description:
+	// Build time parameters
+	BuildTag       string
+	BuildTimestamp string
+
+	filename = path.Base(os.Args[0])
+
+	app = kingpin.New(filename, fmt.Sprintf(`Description:
 	A command-line vault secrets fetcher and parser.
 
-	When invoking with 'parse', a token is generated, used, and automatically revoked. If a token is created or renewed,
-	it must be revoked manually with 'revoke'.
+	When invoking with 'parse', a token is generated, used, and automatically revoked.
+
+	If a token is created or renewed, it must be revoked manually with 'revoke'.
 
 	Vault environment variables VAULT_ADDR, VAULT_INSECURE, VAULT_ROLE_ID, VAULT_SECRET_ID, VAULT_TOKEN override command
-	line specified switches.
+	line options.
 
 Usage:
 	Generate a new approle token:
@@ -43,7 +51,7 @@ Usage:
 	
 	Parse a file:
 		%v parse --addr="http://somewhere:8200" --role-id="dead-beef" --secret-id="ea7-beef" --path="jenkins/dev/user/admin" --file="init.groovy"
-`, os.Args[0], os.Args[0], os.Args[0], os.Args[0], os.Args[0]))
+`, filename, filename, filename, filename, filename))
 
 	addr     = app.Flag("addr", "Vault address, like https://somewhere:8200 (VAULT_ADDR)").String()
 	insecure = app.Flag("insecure", "Skip SSL certificate verification (VAULT_INSECURE)").Bool()
@@ -77,37 +85,40 @@ Usage:
 	pPath     = parse.Flag("path", "The vault path for the secret, like 'jenkins/dev/user/admin'.").Required().String()
 	pFile     = parse.Flag("file", "The file to perform parsing on.").Required().String()
 
-	// Build time parameters
-	BuildTag       string
-	BuildTimestamp string
+	// Version
+	version = app.Command("version", "Display version and build information")
 )
 
 func Run(ctx context.Context, args []string) {
 	switch kingpin.MustParse(app.Parse(args[1:])) {
 	case tCreate.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
-		logger.Infof("Create Token...")
+		logger.Infof("Create token ...", *addr)
 		fmt.Println(vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).CreateToken(GetEnvValue(EnvVaultRoleId, *tCreateRoleId), GetEnvValue(EnvVaultRoleId, *tCreateSecretId)))
 
 	case tRenew.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
-		logger.Infof("Renew Token...")
+		logger.Infof("Renew token ...")
 		fmt.Println(vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).RenewToken(GetEnvValue(EnvVaultToken, *tRenewToken)))
 
 	case tRevoke.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
-		logger.Infof("Revoke Token...")
+		logger.Infof("Revoke token ...")
 		vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).RevokeToken(GetEnvValue(EnvVaultToken, *tRevokeToken))
 
 	case secret.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
-		logger.Infof("Fetch Secret...")
+		logger.Infof("Fetch secrets from %v ...", *sPath)
 		fmt.Println(vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).FetchSecret(GetEnvValue(EnvVaultToken, *sToken), *sPath, *sSelector))
 
 	case parse.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
-		logger.Infof("Parse File...")
+		logger.Infof("Parse file %v using secrets from %v...", *pFile, *pPath)
 		vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).ParseFile(GetEnvValue(EnvVaultRoleId, *pRoleId), GetEnvValue(EnvVaultRoleId, *pSecretId), *pPath, *pFile)
+
+	case version.FullCommand():
+		logger.SetLoggingLevel(*logLevel)
+		fmt.Println(fmt.Sprintf("%v v%v, built on %v", filename, BuildTag, BuildTimestamp))
 	}
 }
 

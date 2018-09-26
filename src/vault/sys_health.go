@@ -14,7 +14,7 @@ type SystemHealth struct {
 	Standby     bool `json:"standby"`
 }
 
-func (i *SystemHealth) Reload(v *VaultClient) *SystemHealth {
+func (i *SystemHealth) Reload(v *Client) *SystemHealth {
 	response, err := v.client.NewRequest().SetContext(v.ctx).SetResult(i).SetError(VaultClientErrors{}).Get(SysHealthLocation)
 
 	v.checkResponseForErrors(response, err, http.StatusOK)

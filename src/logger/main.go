@@ -3,6 +3,11 @@ package logger
 import (
 	log "github.com/sirupsen/logrus"
 	"os"
+	path "path/filepath"
+)
+
+var (
+	filename = path.Base(os.Args[0])
 )
 
 func init() {
@@ -26,7 +31,7 @@ func SetLoggingLevel(level string) {
 func Debugf(format string, args ...interface{}) {
 	log.WithFields(
 		log.Fields{
-			"src": os.Args[0],
+			"src": filename,
 		},
 	).Debugf(
 		format,
@@ -37,7 +42,7 @@ func Debugf(format string, args ...interface{}) {
 func Infof(format string, args ...interface{}) {
 	log.WithFields(
 		log.Fields{
-			"src": os.Args[0],
+			"src": filename,
 		},
 	).Infof(
 		format,
@@ -48,7 +53,7 @@ func Infof(format string, args ...interface{}) {
 func Warnf(format string, args ...interface{}) {
 	log.WithFields(
 		log.Fields{
-			"src": os.Args[0],
+			"src": filename,
 		},
 	).Warnf(
 		format,
@@ -59,7 +64,7 @@ func Warnf(format string, args ...interface{}) {
 func Errorf(format string, args ...interface{}) {
 	log.WithFields(
 		log.Fields{
-			"src": os.Args[0],
+			"src": filename,
 		},
 	).Errorf(
 		format,
@@ -70,7 +75,7 @@ func Errorf(format string, args ...interface{}) {
 func Fatalf(format string, args ...interface{}) {
 	log.WithFields(
 		log.Fields{
-			"src": os.Args[0],
+			"src": filename,
 		},
 	).Fatalf(
 		format,

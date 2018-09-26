@@ -1,0 +1,1 @@
+hudsonRealm.createAccount("{{.username}}", "{{.password}}")

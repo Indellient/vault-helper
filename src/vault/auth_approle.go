@@ -17,7 +17,7 @@ type Approle struct {
 	*Response
 }
 
-func (i *Approle) Login(v *VaultClient) *Approle {
+func (i *Approle) Login(v *Client) *Approle {
 	response, err := v.client.NewRequest().SetContext(v.ctx).SetBody(&ApproleLoginInput{RoleId: v.RoleId, SecretId: v.SecretId}).SetResult(i).SetError(VaultClientErrors{}).Post(AuthApproleLoginLocation)
 
 	v.checkResponseForErrors(response, err, http.StatusOK)

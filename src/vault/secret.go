@@ -16,7 +16,7 @@ type Secret struct {
 	Renewable     bool                   `json:"renewable"`
 }
 
-func (i *Secret) Get(v *VaultClient) *Secret {
+func (i *Secret) Get(v *Client) *Secret {
 	response, err := v.client.NewRequest().SetContext(v.ctx).SetHeader("X-Vault-Token", v.Token).SetResult(i).SetError(VaultClientErrors{}).Get(fmt.Sprintf("%v/%v", SecretLocation, v.Path))
 
 	v.checkResponseForErrors(response, err, http.StatusOK)
