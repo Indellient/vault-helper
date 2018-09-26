@@ -1,0 +1,4 @@
+bin/*
+results/
+pkg/*
+src/*/vendor
