@@ -21,7 +21,7 @@ const (
 
 var (
 	// Build time parameters
-	BuildTag       string
+	BuildVersion   string
 	BuildTimestamp string
 
 	filename = path.Base(os.Args[0])
@@ -118,7 +118,7 @@ func Run(ctx context.Context, args []string) {
 
 	case version.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
-		fmt.Println(fmt.Sprintf("%v v%v, built on %v", filename, BuildTag, BuildTimestamp))
+		fmt.Println(fmt.Sprintf("%v v%v built on %v", filename, BuildVersion, BuildTimestamp))
 	}
 }
 

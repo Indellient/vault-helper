@@ -37,14 +37,14 @@ do_build() {
     # Setup environment
     export GOROOT="$(pkg_path_for go)"
     export GOPATH="$(pwd)"
-    export BUILD_TAG="${VAULT_HELPER_BUILD_TAG:-99.99.999}"                              # Also from Jenkinsfile environment
-    export BUILD_TIMESTAMP="${VAULT_HELPER_BUILD_TIMESTAMP:-$( date --rfc-3339="ns" )}"  # Also from Jenkinsfile environment
+    export BUILD_VERSION="${VAULT_HELPER_BUILD_VERSION:-99.99.999}"                  # Also from Jenkinsfile environment
+    export BUILD_TIMESTAMP="${VAULT_HELPER_BUILD_TIMESTAMP:-$( date --rfc-email )}"  # Also from Jenkinsfile environment
     export BUILD_OS="linux windows"
     export BUILD_ARCH="amd64"
     export BINARY_NAME="$pkg_name"
 
     # Build time LD Flags
-    __GO_LDFLAGS="$( printf -- '-X "main.BuildTag=%s" -X "main.BuildTimestamp=%s"' "${BUILD_TAG}" "${BUILD_TIMESTAMP}" )"
+    __GO_LDFLAGS="$( printf -- '-X "main.BuildVersion=%s" -X "main.BuildTimestamp=%s"' "${BUILD_VERSION}" "${BUILD_TIMESTAMP}" )"
 
     # Setup dependencies
     build_line "Setting up package dependencies ..."

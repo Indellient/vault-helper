@@ -15,8 +15,8 @@ import (
 
 // These vars describe buildtime variables that are emitted when help or version info is printed.
 var (
-	// Stores the at-build-time tag, like "1.1.99"
-	BuildTag string
+	// Stores the at-build-time version, like "1.1.99"
+	BuildVersion string
 
 	// Stores the at-build-time timestamp, like "2012-10-31 15:50:13.793654 +0000 UTC"
 	BuildTimestamp string
@@ -28,7 +28,7 @@ func main() {
 	defer cancel()
 
 	// Parse the cli arguments, and perform the action(s)
-	cli.BuildTag = BuildTag
+	cli.BuildVersion = BuildVersion
 	cli.BuildTimestamp = BuildTimestamp
 	cli.Run(ctx, os.Args)
 }
