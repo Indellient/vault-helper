@@ -2,7 +2,7 @@ pkg_name=vault-helper
 pkg_origin=indellient
 pkg_version="0.1.0"
 pkg_bin_dirs=(bin)
-pkg_build_deps=(core/go/1.10.3 core/which core/gcc core/curl core/git)
+pkg_build_deps=(core/go core/which core/gcc core/curl core/git)
 
 do_download(){
     return 0
@@ -80,6 +80,7 @@ do_build() {
 
     # Perform debug build with -race
     build_line "Performing debug build(s) ..."
+    build_line "    --> go build -race ${OS} ${ARCH} ${BINARY_NAME}-linux-amd64-race ..."
     GOOS=linux GOARCH=amd64 go build             \
         -o="bin/${BINARY_NAME}-linux-amd64-race" \
         -pkgdir="./pkg"                          \

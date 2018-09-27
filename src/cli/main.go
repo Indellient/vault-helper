@@ -93,7 +93,7 @@ func Run(ctx context.Context, args []string) {
 	switch kingpin.MustParse(app.Parse(args[1:])) {
 	case tCreate.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
-		logger.Infof("Create token ...", *addr)
+		logger.Infof("Create token ...")
 		fmt.Println(vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).CreateToken(GetEnvValue(EnvVaultRoleId, *tCreateRoleId), GetEnvValue(EnvVaultRoleId, *tCreateSecretId)))
 
 	case tRenew.FullCommand():
