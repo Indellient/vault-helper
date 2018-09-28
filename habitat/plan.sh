@@ -1,6 +1,6 @@
 pkg_name=vault-helper
 pkg_origin=indellient
-pkg_version="0.1.0"
+pkg_version="0.1.3"
 pkg_bin_dirs=(bin)
 pkg_build_deps=(core/go core/which core/gcc core/curl core/git)
 
@@ -37,8 +37,8 @@ do_build() {
     # Setup environment
     export GOROOT="$(pkg_path_for go)"
     export GOPATH="$(pwd)"
-    export BUILD_VERSION="${VAULT_HELPER_BUILD_VERSION:-99.99.999}"                  # Also from Jenkinsfile environment
-    export BUILD_TIMESTAMP="${VAULT_HELPER_BUILD_TIMESTAMP:-$( date --rfc-email )}"  # Also from Jenkinsfile environment
+    export BUILD_VERSION="${pkg_version:-99.99.999}"
+    export BUILD_TIMESTAMP="${VAULT_HELPER_BUILD_TIMESTAMP:-$( date --rfc-email )}"
     export BUILD_OS="linux windows"
     export BUILD_ARCH="amd64"
     export BINARY_NAME="$pkg_name"
@@ -80,7 +80,7 @@ do_build() {
 
     # Perform debug build with -race
     build_line "Performing debug build(s) ..."
-    build_line "    --> go build -race ${OS} ${ARCH} ${BINARY_NAME}-linux-amd64-race ..."
+    build_line "    --> go build linux amd64 -race ${BINARY_NAME}-linux-amd64-race ..."
     GOOS=linux GOARCH=amd64 go build             \
         -o="bin/${BINARY_NAME}-linux-amd64-race" \
         -pkgdir="./pkg"                          \

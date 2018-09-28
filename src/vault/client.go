@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	path "path/filepath"
 	"strings"
 	"text/template"
 	"time"
@@ -22,6 +23,8 @@ var (
 	ResponseHeaderTimeout = 20
 	ExpectContinueTimeout = 10
 	KeepAlive             = 3
+	LeftTemplateDelim     = `((`
+	RightTemplateDelim    = `))`
 )
 
 // A client represents a go-resty based HTTP client that interacts with the vault API
@@ -229,7 +232,7 @@ func (v *Client) FetchSecret(token, path, selector string) string {
 	secrets := v.Secret.Get(v).Data
 	var parsed bytes.Buffer
 
-	template, err := template.New("secrets").Parse(v.Selector)
+	template, err := template.New("secrets").Delims(LeftTemplateDelim, RightTemplateDelim).Parse(v.Selector)
 	if err != nil {
 		logger.Fatalf("Could not parse template selector '%v': %v", v.Selector, err)
 	}
@@ -259,7 +262,7 @@ func (v *Client) ValidateFetchSecret() error {
 	}
 
 	// Initialize and attempt to parse the token replacement
-	_, err := template.New("secrets").Parse(v.Selector)
+	_, err := template.New("secrets").Delims(LeftTemplateDelim, RightTemplateDelim).Parse(v.Selector)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Could not parse template selector '%v': %v", v.Selector, err))
 	}
@@ -267,11 +270,11 @@ func (v *Client) ValidateFetchSecret() error {
 	return nil
 }
 
-func (v *Client) ParseFile(roleId, secretId, path, file string) {
+func (v *Client) ParseFile(roleId, secretId, vaultPath, file string) {
 	// Set vars for parsing the file
 	v.RoleId = roleId
 	v.SecretId = secretId
-	v.Path = path
+	v.Path = vaultPath
 	v.File = file
 
 	err := v.ValidateParseFile()
@@ -286,7 +289,7 @@ func (v *Client) ParseFile(roleId, secretId, path, file string) {
 	secrets := v.Secret.Get(v).Data
 
 	// Parse the file contents
-	template, err := template.ParseFiles(v.File)
+	template, err := template.New(path.Base(v.File)).Delims(LeftTemplateDelim, RightTemplateDelim).ParseFiles(v.File)
 	if err != nil {
 		logger.Fatalf("Could not parse template file '%v': %v", v.File, err)
 	}

@@ -28,4 +28,6 @@ running on.
 `VAULT_SECRET_ID` - The vault approle secret id
 `VAULT_TOKEN` - The vault token
 
+To avoid conflicts with habitat double-curly-braces replacements in files, use double-parens instead: `((.username))`
+
 See --help for more information.
