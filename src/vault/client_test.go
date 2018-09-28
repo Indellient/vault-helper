@@ -98,11 +98,11 @@ func TestClient_ValidateFetchSecret(t *testing.T) {
 	var client *vault.Client
 
 	// Missing token
-	client = Setup("https://google.com", "", "", "", "/foo/bar", "", "{{.username}}")
+	client = Setup("https://google.com", "", "", "", "/foo/bar", "", "((.username))")
 	assert.NotNil(t, client.ValidateFetchSecret(), "Expected ValidateFetchSecret() to return error for empty token")
 
 	// Missing path
-	client = Setup("https://google.com", "", "", "dead-c0de", "", "", "{{.username}}")
+	client = Setup("https://google.com", "", "", "dead-c0de", "", "", "((.username))")
 	assert.NotNil(t, client.ValidateFetchSecret(), "Expected ValidateFetchSecret() to return error for empty path")
 
 	// Missing selector
@@ -110,15 +110,15 @@ func TestClient_ValidateFetchSecret(t *testing.T) {
 	assert.NotNil(t, client.ValidateFetchSecret(), "Expected ValidateFetchSecret() to return error for empty selector")
 
 	// Invalid selector
-	client = Setup("https://google.com", "", "", "dead-c0de", "/foo/bar", "", "{{.username")
-	assert.NotNil(t, client.ValidateFetchSecret(), "Expected ValidateFetchSecret() to return error for invalid selector '{{.username'")
+	client = Setup("https://google.com", "", "", "dead-c0de", "/foo/bar", "", "((.username")
+	assert.NotNil(t, client.ValidateFetchSecret(), "Expected ValidateFetchSecret() to return error for invalid selector '((.username'")
 
 	// Missing token, path, and selector
 	client = Setup("https://google.com", "", "", "", "", "", "")
 	assert.NotNil(t, client.ValidateFetchSecret(), "Expected ValidateFetchSecret() to return error for missing token, path, and selector")
 
 	// Valid token, path, and selector
-	client = Setup("https://google.com", "", "", "dead-c0de", "/foo/bar", "", "{{.username}}")
+	client = Setup("https://google.com", "", "", "dead-c0de", "/foo/bar", "", "((.username))")
 	assert.Nil(t, client.ValidateFetchSecret(), "Expected ValidateFetchSecret() to return nil for valid token, path, and selector: %v", client.ValidateFetchSecret())
 }
 

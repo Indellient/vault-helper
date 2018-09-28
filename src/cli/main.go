@@ -27,7 +27,7 @@ var (
 	filename = path.Base(os.Args[0])
 
 	app = kingpin.New(filename, fmt.Sprintf(`Description:
-	A command-line vault secrets fetcher and parser.
+	A command-line vault secrets fetcher and template parser.
 
 	When invoking with 'parse', a token is generated, used, and automatically revoked.
 
@@ -47,7 +47,7 @@ Usage:
 		%v token revoke --addr="http://somewhere:8200" --token="dead-c0de"
 
 	Fetch a secret:
-		%v secret get --addr="http://somewhere:8200" --token="dead-c0de" --path="jenkins/dev/user/admin" --selector="{{.username}}" 
+		%v secret get --addr="http://somewhere:8200" --token="dead-c0de" --path="jenkins/dev/user/admin" --selector="((.username))" 
 	
 	Parse a file:
 		%v parse --addr="http://somewhere:8200" --role-id="dead-beef" --secret-id="ea7-beef" --path="jenkins/dev/user/admin" --file="init.groovy"
@@ -76,10 +76,10 @@ Usage:
 	secret    = app.Command("secret", "Fetch a given secret from Vault using the specified token, printing to STDOUT.")
 	sToken    = secret.Flag("token", "The token used to fetch the secret (VAULT_TOKEN).").String()
 	sPath     = secret.Flag("path", "The vault path for the secret, like 'secret/jenkins/dev/user/admin'.").Required().String()
-	sSelector = secret.Flag("selector", "The valid go template selector, like '{{.username}}'.").Required().String()
+	sSelector = secret.Flag("selector", "The valid go template selector, like '((.username))'.").Required().String()
 
 	// Parse a file
-	parse     = app.Command("parse", "Parses all golang template placeholders like '{{.username}}' in a file, replaced with their secret value from Vault.")
+	parse     = app.Command("parse", "Parses all golang template placeholders like '((.username))' in a file, replaced with their secret value from Vault.")
 	pRoleId   = parse.Flag("role-id", "The Vault Approle Role Id (VAULT_ROLE_ID)").String()
 	pSecretId = parse.Flag("secret-id", "The Vault Approle Secret Id (VAULT_SECRET_ID)").String()
 	pPath     = parse.Flag("path", "The vault path for the secret, like 'jenkins/dev/user/admin'.").Required().String()
@@ -94,7 +94,7 @@ func Run(ctx context.Context, args []string) {
 	case tCreate.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
 		logger.Infof("Create token ...")
-		fmt.Println(vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).CreateToken(GetEnvValue(EnvVaultRoleId, *tCreateRoleId), GetEnvValue(EnvVaultRoleId, *tCreateSecretId)))
+		fmt.Println(vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).CreateToken(GetEnvValue(EnvVaultRoleId, *tCreateRoleId), GetEnvValue(EnvVaultSecretId, *tCreateSecretId)))
 
 	case tRenew.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
@@ -114,7 +114,7 @@ func Run(ctx context.Context, args []string) {
 	case parse.FullCommand():
 		logger.SetLoggingLevel(*logLevel)
 		logger.Infof("Parse file %v using secrets from %v...", *pFile, *pPath)
-		vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).ParseFile(GetEnvValue(EnvVaultRoleId, *pRoleId), GetEnvValue(EnvVaultRoleId, *pSecretId), *pPath, *pFile)
+		vault.NewVaultClient(ctx, GetEnvValue(EnvVaultAddr, *addr), GetBoolEnvValue(EnvVaultInsecure, *insecure)).ParseFile(GetEnvValue(EnvVaultRoleId, *pRoleId), GetEnvValue(EnvVaultSecretId, *pSecretId), *pPath, *pFile)
 
 	case version.FullCommand():
 		logger.SetLoggingLevel(*logLevel)

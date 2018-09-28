@@ -21,10 +21,8 @@ pipeline {
                 }
             }
             steps {
-                withEnv(["VAULT_HELPER_BUILD_VERSION=1.0.${env.BUILD_NUMBER}"]) {
-                    dir("${workspace}") {
-                        habitat task: 'build', directory: '.', origin: env.HAB_ORIGIN, bldrUrl: env.HAB_BLDR_URL
-                    }
+                dir("${workspace}") {
+                    habitat task: 'build', directory: '.', origin: env.HAB_ORIGIN, bldrUrl: env.HAB_BLDR_URL
                 }
                 withCredentials([string(credentialsId: 'depot-token', variable: 'HAB_AUTH_TOKEN')]) {
                     habitat task: 'upload', lastBuildFile: "${workspace}/results/last_build.env", authToken: env.HAB_AUTH_TOKEN, bldrUrl: env.HAB_BLDR_URL
