@@ -1,12 +1,7 @@
 package vault
 
 import (
-	"fmt"
 	"net/http"
-)
-
-var (
-	SecretLocation = "/secret"
 )
 
 type Secret struct {
@@ -17,7 +12,7 @@ type Secret struct {
 }
 
 func (i *Secret) Get(v *Client) *Secret {
-	response, err := v.client.NewRequest().SetContext(v.ctx).SetHeader("X-Vault-Token", v.Token).SetResult(i).SetError(VaultClientErrors{}).Get(fmt.Sprintf("%v/%v", SecretLocation, v.Path))
+	response, err := v.client.NewRequest().SetContext(v.ctx).SetHeader("X-Vault-Token", v.Token).SetResult(i).SetError(VaultClientErrors{}).Get(v.Path)
 
 	v.checkResponseForErrors(response, err, http.StatusOK)
 

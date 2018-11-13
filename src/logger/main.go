@@ -22,7 +22,7 @@ func init() {
 func SetLoggingLevel(level string) {
 	logLevel, err := log.ParseLevel(level)
 	if err != nil {
-		log.Fatalf("Count not parse --log-level string '%v': %v", level, err)
+		log.Fatalf("Could not parse --log-level string '%v': %v", level, err)
 	}
 
 	log.SetLevel(logLevel)

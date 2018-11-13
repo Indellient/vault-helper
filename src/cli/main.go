@@ -47,15 +47,15 @@ Usage:
 		%v token revoke --addr="http://somewhere:8200" --token="dead-c0de"
 
 	Fetch a secret:
-		%v secret get --addr="http://somewhere:8200" --token="dead-c0de" --path="jenkins/dev/user/admin" --selector="((.username))" 
+		%v secret get --addr="http://somewhere:8200" --token="dead-c0de" --path="secret/jenkins/dev/user/admin" --selector="((.username))" 
 	
 	Parse a file:
-		%v parse --addr="http://somewhere:8200" --role-id="dead-beef" --secret-id="ea7-beef" --path="jenkins/dev/user/admin" --file="init.groovy"
+		%v parse --addr="http://somewhere:8200" --role-id="dead-beef" --secret-id="ea7-beef" --path="secret/jenkins/dev/user/admin" --file="init.groovy"
 `, filename, filename, filename, filename, filename))
 
 	addr     = app.Flag("addr", "Vault address, like https://somewhere:8200 (VAULT_ADDR)").String()
 	insecure = app.Flag("insecure", "Skip SSL certificate verification (VAULT_INSECURE)").Bool()
-	logLevel = app.Flag("log-level", "Logging level, like 'error' or 'debug'").Default("error").String()
+	logLevel = app.Flag("log-level", "Logging level, one of: panic, fatal, error, warn, info, debug").Default("error").String()
 
 	token = app.Command("token", "Perform operations on a token")
 
@@ -82,7 +82,7 @@ Usage:
 	parse     = app.Command("parse", "Parses all golang template placeholders like '((.username))' in a file, replaced with their secret value from Vault.")
 	pRoleId   = parse.Flag("role-id", "The Vault Approle Role Id (VAULT_ROLE_ID)").String()
 	pSecretId = parse.Flag("secret-id", "The Vault Approle Secret Id (VAULT_SECRET_ID)").String()
-	pPath     = parse.Flag("path", "The vault path for the secret, like 'jenkins/dev/user/admin'.").Required().String()
+	pPath     = parse.Flag("path", "The vault path for the secret, like 'secret/jenkins/dev/user/admin'.").Required().String()
 	pFile     = parse.Flag("file", "The file to perform parsing on.").Required().String()
 
 	// Version
