@@ -17,7 +17,7 @@ cycle without Habitat getting in the way.
 The only package that has unit tests right now is the `vault` package, specifically the `Client{}` object. This is 
 mostly to cover cases where we may get invalid input from a user.
 
-## Runtime
+## Invocation
 
 You can specify the following environment variables to help mask secret information from the system `vault-helper` is
 running on.
@@ -30,4 +30,21 @@ running on.
 
 To avoid conflicts with habitat double-curly-braces replacements in files, use double-parens instead: `((.username))`
 
-See --help for more information.
+See --help for more information and detailed invocation examples.
+
+## Caveats
+
+Below are a list of known caveats with `vault-helper`.  If you find other limitations with it, please update this section.
+
+### Vault Keys with Hyphens
+Vault keys can have a hyphen, as long as it's double-quoted.  Due to how the GO template engine works, when specifying
+a substitution like: `(( .user-name ))`, that key `user-name` should be double-quoted: `(( ".user-name" ))`
+
+### Secret Replacement
+
+`vault-helper` assumes that all secrets at a given path like `secret/jenkins/unstable/admin` are to be parsed on a single
+file at a time.  This is in part due to how `vault-helper` parses and re-writes the file to disk, as well as to simplify
+management of secrets.
+
+A good rule-of-thumb is to make sure you invoke `vault-helper` once on a single file at a given time.  Do not put secrets
+at different paths in the same file to be parsed by `vault-helper`.
