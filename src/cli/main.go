@@ -47,10 +47,10 @@ Usage:
 		%v token revoke --addr="http://somewhere:8200" --token="dead-c0de"
 
 	Fetch a secret:
-		%v secret get --addr="http://somewhere:8200" --token="dead-c0de" --path="secret/jenkins/dev/user/admin" --selector="((.username))" 
+		%v secret --addr="http://somewhere:8200" --token="dead-c0de" --path="secret/data/jenkins/dev/user/admin" --selector="((.username))" 
 	
 	Parse a file:
-		%v parse --addr="http://somewhere:8200" --role-id="dead-beef" --secret-id="ea7-beef" --path="secret/jenkins/dev/user/admin" --file="init.groovy"
+		%v parse --addr="http://somewhere:8200" --role-id="dead-beef" --secret-id="ea7-beef" --path="secret/data/jenkins/dev/user/admin" --file="init.groovy"
 `, filename, filename, filename, filename, filename))
 
 	addr     = app.Flag("addr", "Vault address, like https://somewhere:8200 (VAULT_ADDR)").String()

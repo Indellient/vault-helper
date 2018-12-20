@@ -42,9 +42,11 @@ a substitution like: `(( .user-name ))`, that key `user-name` should be double-q
 
 ### Secret Replacement
 
-`vault-helper` assumes that all secrets at a given path like `secret/jenkins/unstable/admin` are to be parsed on a single
+`vault-helper` assumes that all secrets at a given path like `secret/data/jenkins/unstable/admin` are to be parsed on a single
 file at a time.  This is in part due to how `vault-helper` parses and re-writes the file to disk, as well as to simplify
 management of secrets.
+
+Vault helper supports either kv-v1 or kv-v2 secret stores, make sure to pass the correct `--path` in at invocation time.
 
 A good rule-of-thumb is to make sure you invoke `vault-helper` once on a single file at a given time.  Do not put secrets
 at different paths in the same file to be parsed by `vault-helper`.
