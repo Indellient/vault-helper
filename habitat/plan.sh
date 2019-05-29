@@ -1,8 +1,9 @@
 pkg_name=vault-helper
 pkg_origin=indellient
-pkg_version="0.1.3"
+pkg_version="0.1.4"
 pkg_bin_dirs=(bin)
-pkg_build_deps=(core/go core/which core/gcc core/curl core/git)
+pkg_deps=(core/glibc)
+pkg_build_deps=(core/go core/which core/gcc core/glibc core/curl core/git)
 
 do_download(){
     return 0
@@ -65,7 +66,7 @@ do_build() {
 
     # Run gometalinter.v2 --fast
     build_line "Running gometalinter in $(pwd) ..."
-    bin/gometalinter --fast
+    bin/gometalinter --fast src
 
     # Perform unit tests
     build_line "Running go unit tests ..."
