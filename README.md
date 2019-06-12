@@ -17,16 +17,33 @@ cycle without Habitat getting in the way.
 The only package that has unit tests right now is the `vault` package, specifically the `Client{}` object. This is 
 mostly to cover cases where we may get invalid input from a user.
 
+Unit tests are run with every `build` in the studio.
+
+## Integration Test
+
+There are some InSpec tests that can be invoked to perform a basic set of integration tests. Perform the following steps
+on your system to run the tests:
+
+```
+me@mybox ~/vault-helper $ rm -rf results && hab studio build -D
+me@mybox ~/vault-helper $ kitchen converge "(consul|vault|haproxy)" --concurrency=1
+me@mybox ~/vault-helper $ kitchen verify vault-helper
+me@mybox ~/vault-helper $ kitchen destroy "(consul|vault|haproxy)"
+```
+
+`bluepipeline/vault`, `bluepipeline/consul`, and `bluepipeline/vault-haproxy` are installed from the Blupipeline builder,
+and `vault-helper` is installed from a local .hart file.  See `.kitchen.yml` for more info.
+
 ## Invocation
 
 You can specify the following environment variables to help mask secret information from the system `vault-helper` is
 running on.
 
-`VAULT_ADDR` - Vault URL
-`VAULT_INSECURE` - Set to `true` to disable SSL cert checking
-`VAULT_ROLE_ID` - The vault approle role id
-`VAULT_SECRET_ID` - The vault approle secret id
-`VAULT_TOKEN` - The vault token
+`VAULT_ADDR`        - Vault URL
+`VAULT_SKIP_VERIFY` - Set to `true` to disable SSL cert checking
+`VAULT_ROLE_ID`     - The vault approle role id
+`VAULT_SECRET_ID `  - The vault approle secret id
+`VAULT_TOKEN`       - The vault token
 
 To avoid conflicts with habitat double-curly-braces replacements in files, use double-parens instead: `((.username))`
 

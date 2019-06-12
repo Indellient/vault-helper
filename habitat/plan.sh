@@ -1,6 +1,7 @@
+# shellcheck shell=bash disable=SC2034,SC2155,SC2154
 pkg_name=vault-helper
 pkg_origin=indellient
-pkg_version="0.1.4"
+pkg_version="0.1.5"
 pkg_bin_dirs=(bin)
 pkg_deps=(core/glibc)
 pkg_build_deps=(core/go core/which core/gcc core/glibc core/curl core/git)
@@ -16,22 +17,22 @@ do_before() {
     export DEP_VERSION="0.5.0"
     export GOMETALINTER_VERSION="2.0.11"
 
-    pushd "../bin" > /dev/null
+    pushd "../bin" > /dev/null || return 1
     # Download dep
-    if [ ! -e "dep" ]; then
+    if [[ ! -e "dep" ]]; then
         build_line "Setting up dep..."
         curl --silent -LL -X GET https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o dep
         chmod +x dep
     fi
 
     # Download gometalinter
-    if [ ! -e "gometalinter" ]; then
+    if [[ ! -e "gometalinter" ]]; then
         build_line "Setting up gometalinter..."
         curl --silent -LL -X GET https://github.com/alecthomas/gometalinter/releases/download/v${GOMETALINTER_VERSION}/gometalinter-${GOMETALINTER_VERSION}-linux-amd64.tar.gz -O
         tar --strip-components=1 -zxf gometalinter-${GOMETALINTER_VERSION}-linux-amd64.tar.gz
         rm -f gometalinter-${GOMETALINTER_VERSION}-linux-amd64.tar.gz
     fi
-    popd > /dev/null
+    popd > /dev/null || return 1
 }
 
 do_build() {
@@ -49,19 +50,20 @@ do_build() {
 
     # Setup dependencies
     build_line "Setting up package dependencies ..."
-    for _GOPKGDIR in $( ls -1d src/* ); do
+    for _GOPKGDIR in src/* ; do
+        [[ -d "${_GOPKGDIR}" ]] || break    # Break out early if there's no matches
+
         _GOPKGNAME="$( basename "${_GOPKGDIR}" )"
 
-        pushd ${_GOPKGDIR} > /dev/null
-        if [ -e "Gopkg.toml" ]; then
+        pushd "${_GOPKGDIR}" > /dev/null || return 1
+        if [[ -e "Gopkg.toml" ]]; then
             build_line "    --> dep ensure ${_GOPKGDIR} ..."
             ../../bin/dep ensure
         else
             build_line "    --> dep init ${_GOPKGDIR} ..."
             ../../bin/dep init
         fi
-        popd > /dev/null
-
+        popd > /dev/null || return 1
     done
 
     # Run gometalinter.v2 --fast
@@ -70,11 +72,14 @@ do_build() {
 
     # Perform unit tests
     build_line "Running go unit tests ..."
-    for _GOPKGDIR in $( ls -1d src/* ); do
+    for _GOPKGDIR in src/*; do
+        [[ -d "${_GOPKGDIR}" ]] || break    # Break out early if there's no matches
+
         _GOPKGNAME="$( basename "${_GOPKGDIR}" )"
+
         build_line "    --> go test -race ${_GOPKGNAME} -v ..."
-        go test -race ${_GOPKGNAME} -v
-        if [ "$?" -ne "0" ]; then
+
+        if ! go test -race "${_GOPKGNAME}" -v; then
             exit $?
         fi
     done
@@ -99,7 +104,7 @@ do_build() {
             export GOARCH="${ARCH}"
 
             OUT="${BINARY_NAME}-${OS}-${ARCH}"
-            if [ "${OS}" == "windows" ]; then
+            if [[ "${OS}" == "windows" ]]; then
                 OUT="${OUT}.exe"
             fi
 
@@ -117,7 +122,7 @@ do_build() {
 # I am lazy, so if DO_INSTALL is false, we skip installing binaries so we don't have to wait for habitat to tar it up
 # after a build is done, when all I need is access to the built binary.
 do_install() {
-    if [ "${DO_INSTALL}" == "true" ] || [ -z "${DO_INSTALL}" ]; then
+    if [[ "${DO_INSTALL}" == "true" ]] || [[ -z "${DO_INSTALL}" ]]; then
         build_line "Installing $pkg_name{.exe,-race} binaries in habitat pkg ..."
         install -D "$PLAN_CONTEXT/../bin/$pkg_name-linux-amd64" "$pkg_prefix/bin/$pkg_name"
         install -D "$PLAN_CONTEXT/../bin/$pkg_name-linux-amd64-race" "$pkg_prefix/bin/$pkg_name-race"
