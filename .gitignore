@@ -2,3 +2,4 @@ bin/*
 results/
 pkg/*
 src/*/vendor
+.kitchen

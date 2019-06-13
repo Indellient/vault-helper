@@ -1,0 +1,152 @@
+driver:
+  name: docker
+  use_sudo: false
+
+provisioner:
+  name: habitat
+  depot_url: https://bldr.bluepipeline.io
+  hab_version: "0.79.1"
+  hab_sup_version: "0.79.1"
+
+verifier:
+  name: inspec
+
+platforms:
+  - name: centos-7.4
+
+suites:
+  - name: consul_leonardo
+    driver:
+      instance_name: leonardo
+      hostname: leonardo
+    provisioner:
+      package_origin: bluepipeline
+      package_name: consul
+      service_update_strategy: rolling
+      service_topology: leader
+
+  - name: consul_donatello
+    driver:
+      links: "leonardo:leonardo"
+      hostname: donatello
+    provisioner:
+      package_origin: bluepipeline
+      package_name: consul
+      service_update_strategy: rolling
+      service_topology: leader
+      hab_sup_peer:
+        - leonardo
+
+  - name: consul_michelangelo
+    driver:
+      links: "leonardo:leonardo"
+      hostname: michelangelo
+    provisioner:
+      package_origin: bluepipeline
+      package_name: consul
+      service_update_strategy: rolling
+      service_topology: leader
+      hab_sup_peer:
+        - leonardo
+
+  - name: vault_lennon
+    driver:
+      links: "leonardo:leonardo"
+      instance_name: lennon
+      hostname: lennon
+      cap_add:
+        - IPC_LOCK
+    provisioner:
+      package_origin: bluepipeline
+      package_name: vault
+      service_update_strategy: rolling
+      service_topology: leader
+      hab_sup_bind:
+        - backend:consul.default
+      hab_sup_peer:
+        - leonardo
+
+  - name: vault_mccartney
+    driver:
+      links:
+        - "leonardo:leonardo"
+        - "lennon:lennon"
+      hostname: mccartney
+      cap_add:
+        - IPC_LOCK
+    provisioner:
+      package_origin: bluepipeline
+      package_name: vault
+      service_topology: leader
+      service_update_strategy: rolling
+      hab_sup_bind:
+        - backend:consul.default
+      hab_sup_peer:
+        - leonardo
+
+  - name: vault_harrison
+    driver:
+      links:
+        - "leonardo:leonardo"
+        - "lennon:lennon"
+      hostname: harrison
+      cap_add:
+        - IPC_LOCK
+    provisioner:
+      package_origin: bluepipeline
+      package_name: vault
+      service_topology: leader
+      service_update_strategy: rolling
+      hab_sup_bind:
+        - backend:consul.default
+      hab_sup_peer:
+        - leonardo
+
+  - name: haproxy_mozart
+    driver:
+      links:
+        - "leonardo:leonardo"
+        - "lennon:lennon"
+      hostname: mozart
+      instance_name: mozart
+      forward:
+        - 80:80
+        - 443:443
+        - 9000:9000
+    provisioner:
+      package_origin: bluepipeline
+      package_name: vault_haproxy
+      service_topology: leader
+      service_update_strategy: rolling
+      hab_sup_bind:
+        - backend:vault.default
+        - consul:consul.default
+      hab_sup_peer:
+        - leonardo
+        - lennon
+    verifier:
+      inspec_tests:
+        - test/smoke/vault-helper
+
+  - name: vault_helper
+    driver:
+      links:
+        - "mozart:mozart"
+      hostname: vault-helper
+      instance_name: vault-helper
+    provisioner:
+      name: shell
+      script: 'test/smoke/vault-helper/bootstrap.sh'
+      arguments: [
+        '--sudo',
+        '--vault-node=mozart',
+        '--hab-version=0.79.1',
+        '--hab-bldr-url=https://bldr.bluepipeline.io',
+        '--hab-pkgs=bluepipeline/jq',
+        '--hab-harts=*.hart',
+        '--hab-binlink'
+      ]
+      data_path: 'results'
+    verifier:
+      inspec_tests:
+        - test/smoke/vault-helper

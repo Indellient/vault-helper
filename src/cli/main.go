@@ -13,7 +13,7 @@ import (
 
 const (
 	EnvVaultAddr     = "VAULT_ADDR"
-	EnvVaultInsecure = "VAULT_INSECURE"
+	EnvVaultInsecure = "VAULT_SKIP_VERIFY"
 	EnvVaultRoleId   = "VAULT_ROLE_ID"
 	EnvVaultSecretId = "VAULT_SECRET_ID"
 	EnvVaultToken    = "VAULT_TOKEN"
@@ -33,7 +33,7 @@ var (
 
 	If a token is created or renewed, it must be revoked manually with 'revoke'.
 
-	Vault environment variables VAULT_ADDR, VAULT_INSECURE, VAULT_ROLE_ID, VAULT_SECRET_ID, VAULT_TOKEN override command
+	Vault environment variables VAULT_ADDR, VAULT_SKIP_VERIFY, VAULT_ROLE_ID, VAULT_SECRET_ID, VAULT_TOKEN override command
 	line options.
 
 Usage:
@@ -54,7 +54,7 @@ Usage:
 `, filename, filename, filename, filename, filename))
 
 	addr     = app.Flag("addr", "Vault address, like https://somewhere:8200 (VAULT_ADDR)").String()
-	insecure = app.Flag("insecure", "Skip SSL certificate verification (VAULT_INSECURE)").Bool()
+	insecure = app.Flag("skip-verify", "Skip SSL certificate verification (VAULT_SKIP_VERIFY)").Bool()
 	logLevel = app.Flag("log-level", "Logging level, one of: panic, fatal, error, warn, info, debug").Default("error").String()
 
 	token = app.Command("token", "Perform operations on a token")
