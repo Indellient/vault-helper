@@ -20,14 +20,9 @@ control 'vault-helper-1.0' do
   vault_token = command(%q{curl --silent -X GET http://mozart:9631/census | jq -r '.census_groups | .["vault.default"] | .service_config | .value | .config | .token'}).stdout.strip
   vault_addr = attribute('vault_addr')
   vault_skip_verify = attribute('vault_skip_verify')
-  vault_do_skip_verify = if vault_skip_verify == true
-                           ' VAULT_SKIP_VERIFY="true"'
-                         else
-                           ''
-                         end
 
   # Invoke vault-helper
-  describe command(%Q{VAULT_TOKEN="#{vault_token}" VAULT_ADDR="#{vault_addr}"#{vault_do_skip_verify} vault-helper secret --path="secret/credentials" --selector="((.username)) ((.password))"}) do
+  describe command(%Q{VAULT_TOKEN="#{vault_token}" VAULT_ADDR="#{vault_addr}" VAULT_SKIP_VERIFY="#{vault_skip_verify.to_s}" vault-helper secret --path="secret/credentials" --selector="((.username)) ((.password))"}) do
     its('exit_status') { should eq 0 }
     its('stderr') { should be_empty }
     its('stdout') { should match /^kevin bacon$/ }
