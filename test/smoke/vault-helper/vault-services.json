@@ -1,0 +1,8 @@
+[
+  {
+    "pkg_ident": "core/vault",
+    "channel": "stable",
+    "strategy": "none",
+    "topology": "standalone"
+  }
+]

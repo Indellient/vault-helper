@@ -26,13 +26,14 @@ on your system to run the tests:
 
 ```
 me@mybox ~/vault-helper $ rm -rf results && hab studio build -D
-me@mybox ~/vault-helper $ kitchen converge "(consul|vault|haproxy)" --concurrency=1
+me@mybox ~/vault-helper $ kitchen converge "vault" --concurrency=1
 me@mybox ~/vault-helper $ kitchen verify vault-helper
-me@mybox ~/vault-helper $ kitchen destroy "(consul|vault|haproxy)"
+me@mybox ~/vault-helper $ kitchen destroy "vault"
 ```
 
-`bluepipeline/vault`, `bluepipeline/consul`, and `bluepipeline/vault-haproxy` are installed from the Blupipeline builder,
-and `vault-helper` is installed from a local .hart file.  See `.kitchen.yml` for more info.
+Note that the Test Kitchen environment does not use the `kitchen-habitat` plugin, as we need to bootstrap a very minimal
+environment to run our `vault-helper` InSpec tests against.  `vault-helper` tests do not require a running hab service,
+but do require a valid Vault instance to perform tests against (see `.kitchen.yml` for more info).
 
 ## Invocation
 
@@ -54,12 +55,13 @@ See --help for more information and detailed invocation examples.
 Below are a list of known caveats with `vault-helper`.  If you find other limitations with it, please update this section.
 
 ### Vault Keys with Hyphens
+
 Vault keys can have a hyphen, as long as it's double-quoted.  Due to how the GO template engine works, when specifying
-a substitution like: `(( .user-name ))`, that key `user-name` should be double-quoted: `(( ".user-name" ))`
+a substitution like: `(( ".user-name" ))`, that key `user-name` must be double-quoted.
 
 ### Secret Replacement
 
-`vault-helper` assumes that all secrets at a given path like `secret/data/jenkins/unstable/admin` are to be parsed on a single
+`vault-helper` assumes that all secrets at a given path like `secret/data/jenkins/admin` are to be parsed on a single
 file at a time.  This is in part due to how `vault-helper` parses and re-writes the file to disk, as well as to simplify
 management of secrets.
 

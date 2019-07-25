@@ -1,10 +1,10 @@
 # shellcheck shell=bash disable=SC2034,SC2155,SC2154
 pkg_name=vault-helper
 pkg_origin=indellient
-pkg_version="0.1.5"
+pkg_version="0.1.6"
 pkg_bin_dirs=(bin)
 pkg_deps=(core/glibc)
-pkg_build_deps=(core/go core/which core/gcc core/glibc core/curl core/git)
+pkg_build_deps=(core/go core/which core/gcc core/glibc core/curl core/git core/shellcheck)
 
 do_download(){
     return 0
@@ -16,6 +16,10 @@ do_before() {
     export GOPATH="$(pwd)/../"
     export DEP_VERSION="0.5.0"
     export GOMETALINTER_VERSION="2.0.11"
+
+    # Run shellcheck first
+    shellcheck ./*.sh || return 1
+    shellcheck ../test/smoke/vault-helper/*.sh || return 1
 
     pushd "../bin" > /dev/null || return 1
     # Download dep

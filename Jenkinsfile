@@ -1,15 +1,18 @@
-pipeline {
+def bldrs = [
+    [ url: "https://bldr.bluepipeline.io", origin: "bluepipeline", credentialsId: "depot-token" ],
+    [ url: "https://bldr.habitat.sh", origin: "indellient", credentialsId: "public-depot-token" ],
+]
 
+pipeline {
     agent none
 
     environment {
         HAB_NOCOLORING = true
-        HAB_ORIGIN = 'bluepipeline'
-        HAB_BLDR_URL = 'https://bldr.bluepipeline.io'
+        HAB_NONINTERACTIVE = true
     }
 
     stages {
-        stage('Build and Upload') {
+        stage('Build, Upload, and Promote') {
             agent {
                 node {
                     label 'lnx'
@@ -21,21 +24,33 @@ pipeline {
                 }
             }
             steps {
-                withCredentials([string(credentialsId: 'depot-token', variable: 'HAB_AUTH_TOKEN')]) {
-                    sh "hab origin key download bluepipeline --auth ${HAB_AUTH_TOKEN} --url ${env.HAB_BLDR_URL}"
-                    sh "hab origin key download bluepipeline --auth ${HAB_AUTH_TOKEN} --url ${env.HAB_BLDR_URL} --secret"
-                }
+                script {
+                    for (int i=0; i < bldrs.size(); i++) {
+                        withCredentials([string(credentialsId: "${bldrs[i].credentialsId}", variable: 'HAB_AUTH_TOKEN')]){
+                            /**
+                             * Download Keys
+                             */
+                            sh "hab origin key download ${bldrs[i].origin} --auth ${HAB_AUTH_TOKEN} --url ${bldrs[i].url}"
+                            sh "hab origin key download ${bldrs[i].origin} --auth ${HAB_AUTH_TOKEN} --url ${bldrs[i].url} --secret"
 
-                dir("${workspace}") {
-                    habitat task: 'build', directory: '.', origin: env.HAB_ORIGIN, bldrUrl: env.HAB_BLDR_URL
-                }
+                            /**
+                             * Build
+                             */
+                            dir("${workspace}") {
+                                habitat task: 'build', directory: '.', origin: "${bldrs[i].origin}", bldrUrl: "${bldrs[i].url}", docker: true
+                            }
 
-                withCredentials([string(credentialsId: 'depot-token', variable: 'HAB_AUTH_TOKEN')]) {
-                    habitat task: 'upload', lastBuildFile: "${workspace}/results/last_build.env", authToken: env.HAB_AUTH_TOKEN, bldrUrl: env.HAB_BLDR_URL
-                }
+                            /**
+                             * Upload
+                             */
+                            habitat task: 'upload', lastBuildFile: "${workspace}/results/last_build.env", authToken: "${HAB_AUTH_TOKEN}", bldrUrl: "${bldrs[i].url}"
 
-                dir("${workspace}") {
-                    sh 'hab studio rm'
+                            /**
+                             * Promote
+                             */
+                            habitat task: 'promote', channel: 'stable', lastBuildFile: "${workspace}/results/last_build.env", authToken: "${HAB_AUTH_TOKEN}", bldrUrl: "${bldrs[i].url}"
+                        }
+                    }
                 }
             }
         }
