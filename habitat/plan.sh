@@ -37,6 +37,17 @@ do_before() {
         rm -f gometalinter-${GOMETALINTER_VERSION}-linux-amd64.tar.gz
     fi
     popd > /dev/null || return 1
+
+    # Download gothub (github release util)
+    if [[ ! -e "../bin/gothub" ]]; then
+        build_line "Downloading github.com/itchio/gothub to ../bin/gothub..."
+        go get github.com/itchio/gothub
+
+        if [[ -d "../src/github.com" ]]; then
+            build_line "Removing directory ../src/github.com..."
+            rm -rf "../src/github.com"
+        fi
+    fi
 }
 
 do_build() {
