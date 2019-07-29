@@ -1,9 +1,12 @@
+/**
+ * This Jenkinsfile is meant to build the vault-helper binaries using go's built-in cross compile functionality, and
+ * upload to GitHub releases page only.
+ */
 def githubCredentialsId = 'managed-pipeline-ci-robot'                       // The GitHub credentials ID for accessing the repo
 def githubRepoUrl = 'https://github.com/Indellient/vault-helper.git'        // The GitHUb repo URL for vault-helper
-def bldrs = [
-    [ url: "https://bldr.bluepipeline.io", origin: "bluepipeline", credentialsId: "depot-token" ],
-    [ url: "https://bldr.habitat.sh", origin: "indellient", credentialsId: "public-depot-token" ],
-]
+def bldrUrl = 'https://bldr.habitat.sh'                                     // Builder URL
+def bldrOrigin = 'indellient'                                               // Builder Origin
+def bldrCredentialsId = 'public-depot-token'                                // Builder Credentials
 
 pipeline {
     agent none
@@ -21,7 +24,7 @@ pipeline {
     }
 
     stages {
-        stage('Build, Upload, and Promote') {
+        stage('Build & Release') {
             agent {
                 node {
                     label 'lnx'
@@ -39,54 +42,42 @@ pipeline {
                      */
                     git branch: "${env.BRANCH_NAME}", credentialsId: "${githubCredentialsId}", url: "${githubRepoUrl}"
 
-                    /**
-                     * Do all builds
-                     */
-                    for (int i=0; i < bldrs.size(); i++) {
-                        withCredentials([string(credentialsId: "${bldrs[i].credentialsId}", variable: 'HAB_AUTH_TOKEN')]){
+                    withEnv(["GITHUB_REPO=${githubRepoUrl}"]) {
+                        withCredentials([
+                                string(credentialsId: "${bldrCredentialsId}", variable: 'HAB_AUTH_TOKEN'),
+                                usernamePassword(credentialsId: "${githubCredentialsId}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')
+                        ]) {
                             /**
                              * Download Keys
                              */
-                            sh "hab origin key download ${bldrs[i].origin} --auth ${HAB_AUTH_TOKEN} --url ${bldrs[i].url}"
-                            sh "hab origin key download ${bldrs[i].origin} --auth ${HAB_AUTH_TOKEN} --url ${bldrs[i].url} --secret"
+                            sh "hab origin key download ${bldrOrigin} --auth ${HAB_AUTH_TOKEN} --url ${bldrUrl}"
+                            sh "hab origin key download ${bldrOrigin} --auth ${HAB_AUTH_TOKEN} --url ${bldrUrl} --secret"
 
                             /**
                              * Build
                              */
                             dir("${workspace}") {
-                                habitat task: 'build', directory: '.', origin: "${bldrs[i].origin}", bldrUrl: "${bldrs[i].url}", docker: true
+                                habitat task: 'build', directory: '.', origin: "${bldrOrigin}", bldrUrl: "${bldrUrl}", docker: true
                             }
 
                             /**
-                             * Upload & Promote if on master
+                             * Generate Checksums
+                             */
+                            sh 'sha256sum bin/vault-helper-linux-amd64 > bin/vault-helper-linux-amd64.sha256'
+                            sh 'sha256sum bin/vault-helper-windows-amd64.exe > bin/vault-helper-windows-amd64.exe.sha256'
+
+                            /**
+                             * Create GH Release
                              */
                             if (env.BRANCH_NAME == 'master') {
-                                /**
-                                 * Upload
-                                 */
-                                habitat task: 'upload', lastBuildFile: "${workspace}/results/last_build.env", authToken: "${HAB_AUTH_TOKEN}", bldrUrl: "${bldrs[i].url}"
+                                // Create the release
+                                sh '. results/last_build.env && bin/gothub release --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name "v$pkg_version"'
 
-                                /**
-                                 * Promote
-                                 */
-                                habitat task: 'promote', channel: 'stable', lastBuildFile: "${workspace}/results/last_build.env", authToken: "${HAB_AUTH_TOKEN}", bldrUrl: "${bldrs[i].url}"
-
-                                /**
-                                 * Create GH Release if origin is indellient
-                                 */
-                                if (bldrs[i].origin == 'indellient') {
-                                    withCredentials([usernamePassword(credentialsId: "${githubCredentialsId}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                                        withEnv(["GITHUB_REPO=${githubRepoUrl}"]) {
-                                            sh 'ls -lah *'
-                                            // Create the release
-                                            sh '. results/last_build.env && bin/gothub release --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag $pkg_name-$pkg_version-$pkg_release --name "$pkg_name v$pkg_version-$pkg_release"'
-
-                                            // Upload the files (no .hart files)
-                                            sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag $pkg_name-$pkg_version-$pkg_release --name vault-helper-linux-amd64 --file bin/vault-helper-linux-amd64'
-                                            sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag $pkg_name-$pkg_version-$pkg_release --name vault-helper-windows-amd64.exe --file bin/vault-helper-windows-amd64.exe'
-                                        }
-                                    }
-                                }
+                                // Upload the files (no .hart files)
+                                sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-linux-amd64 --file bin/vault-helper-linux-amd64'
+                                sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-linux-amd64.sha256 --file bin/vault-helper-linux-amd64.sha256'
+                                sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-windows-amd64.exe --file bin/vault-helper-windows-amd64.exe'
+                                sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-windows-amd64.exe.sha256 --file bin/vault-helper-windows-amd64.exe.sha256'
                             }
                         }
                     }
