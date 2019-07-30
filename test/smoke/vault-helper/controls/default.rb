@@ -16,13 +16,11 @@ control 'vault-helper-1.0' do
   end
 
   # Fetch the root token from habitat ring.  Note that this requires the http gateway to NOT have authentication on it
-  # @TODO: At some point, converting this to a native inspec library that can do this for us would be ideal
-  vault_token = command(%q{curl --silent -X GET http://mozart:9631/census | jq -r '.census_groups | .["vault.default"] | .service_config | .value | .config | .token'}).stdout.strip
-  vault_addr = attribute('vault_addr')
-  vault_skip_verify = attribute('vault_skip_verify')
+  vault_token = command(%q{curl --silent -X GET http://localhost:9631/census | jq -r '.census_groups | .["vault.default"] | .service_config | .value | .config | .token'}).stdout.strip
+  vault_addr = 'http://vault:8200'
 
   # Invoke vault-helper
-  describe command(%Q{VAULT_TOKEN="#{vault_token}" VAULT_ADDR="#{vault_addr}" VAULT_SKIP_VERIFY="#{vault_skip_verify.to_s}" vault-helper secret --path="secret/credentials" --selector="((.username)) ((.password))"}) do
+  describe command(%Q{VAULT_TOKEN="#{vault_token}" VAULT_ADDR="#{vault_addr}" vault-helper secret --path="vault-helper/credentials" --selector="((.username)) ((.password))"}) do
     its('exit_status') { should eq 0 }
     its('stderr') { should be_empty }
     its('stdout') { should match /^kevin bacon$/ }

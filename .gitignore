@@ -3,3 +3,4 @@ results/
 pkg/*
 src/*/vendor
 .kitchen
+.studiorc
