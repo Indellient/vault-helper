@@ -84,9 +84,9 @@ pipeline {
             steps {
                 script {
                     /**
-                     * Only run the GH release if we don't have a matching tag from the pkg_version
+                     * Only run the GH release if we don't have a matching tag from the pkg_version and we are on master branch
                      */
-                    if (sh(returnStdout: true, script: '. results/last_build.env && git tag --list v$pkg_version').trim() == "" && env.BRANCH_NAME == "master") {
+                    if (env.BRANCH_NAME == "master" && sh(returnStdout: true, script: '. results/last_build.env && git tag --list v$pkg_version').trim() == "") {
                         // Create the release
                         sh '. results/last_build.env && bin/gothub release --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name "v$pkg_version"'
 
