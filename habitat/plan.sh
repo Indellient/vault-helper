@@ -1,7 +1,7 @@
 # shellcheck shell=bash disable=SC2034,SC2155,SC2154
 pkg_name=vault-helper
 pkg_origin=indellient
-pkg_version="0.1.6"
+pkg_version="0.1.7"
 pkg_bin_dirs=(bin)
 pkg_deps=(core/glibc)
 pkg_build_deps=(core/go core/which core/gcc core/glibc core/curl core/git core/shellcheck)
