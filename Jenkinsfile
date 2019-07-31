@@ -88,14 +88,16 @@ pipeline {
                      */
                     if (env.BRANCH_NAME == "master" && sh(returnStdout: true, script: '. results/last_build.env && git tag --list v$pkg_version').trim() == "") {
                         withEnv(["GITHUB_REPO=${githubRepoUrl}"]) {
-                            // Create the release
-                            sh '. results/last_build.env && bin/gothub release --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name "v$pkg_version"'
+                            withCredentials([usernamePassword(credentialsId: "${githubCredentialsId}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                                // Create the release
+                                sh '. results/last_build.env && bin/gothub release --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name "v$pkg_version"'
 
-                            // Upload the files (no .hart files)
-                            sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-linux-amd64 --file bin/vault-helper-linux-amd64'
-                            sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-linux-amd64.sha256 --file bin/vault-helper-linux-amd64.sha256'
-                            sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-windows-amd64.exe --file bin/vault-helper-windows-amd64.exe'
-                            sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-windows-amd64.exe.sha256 --file bin/vault-helper-windows-amd64.exe.sha256'
+                                // Upload the files (no .hart files)
+                                sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-linux-amd64 --file bin/vault-helper-linux-amd64'
+                                sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-linux-amd64.sha256 --file bin/vault-helper-linux-amd64.sha256'
+                                sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-windows-amd64.exe --file bin/vault-helper-windows-amd64.exe'
+                                sh '. results/last_build.env && bin/gothub upload --user Indellient --security-token ${GITHUB_TOKEN} --repo $( basename "${GITHUB_REPO}" | sed "s/.git//g" ) --tag v$pkg_version --name vault-helper-windows-amd64.exe.sha256 --file bin/vault-helper-windows-amd64.exe.sha256'
+                            }
                         }
                     }
                 }
