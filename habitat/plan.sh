@@ -80,6 +80,8 @@ do_build() {
     for _GOPKGDIR in src/*; do
         [[ -d "${_GOPKGDIR}" ]] || break    # Break out early if there's no matches
 
+        [[ "${_GOPKGDIR}" == "github.com" ]] || break # github.com is empty because gothub is removed
+
         _GOPKGNAME="$( basename "${_GOPKGDIR}" )"
 
         build_line "    --> go test -race ${_GOPKGNAME} -v ..."
