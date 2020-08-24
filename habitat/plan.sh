@@ -4,7 +4,7 @@ pkg_origin=indellient
 pkg_version="0.1.7"
 pkg_bin_dirs=(bin)
 pkg_deps=(core/glibc)
-pkg_build_deps=(core/go core/which core/gcc core/glibc core/curl core/git core/shellcheck)
+pkg_build_deps=(core/go/1.12.9 core/which core/gcc core/glibc core/curl core/git core/shellcheck)
 
 do_download(){
     return 0
