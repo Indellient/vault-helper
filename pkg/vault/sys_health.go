@@ -23,7 +23,7 @@ func (i *SystemHealth) Reload(v *Client) *SystemHealth {
 }
 
 func (i *SystemHealth) Ready() bool {
-	return i.GetInitialized() == true && i.GetSealed() == false && i.GetStandby() == false
+	return i.GetInitialized() && ! i.GetSealed() && ! i.GetStandby()
 }
 
 func (i *SystemHealth) GetInitialized() bool {
