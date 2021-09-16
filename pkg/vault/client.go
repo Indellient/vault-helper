@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"gopkg.in/resty.v1"
-	"logger"
 	"net"
 	"net/http"
 	"net/url"
@@ -16,6 +15,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/Indellient/vault-helper/pkg/logger"
 )
 
 var (

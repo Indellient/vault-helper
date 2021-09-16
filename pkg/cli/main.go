@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"logger"
 	"os"
 	path "path/filepath"
 	"strconv"
-	"vault"
+
+	"github.com/Indellient/vault-helper/pkg/logger"
+	"github.com/Indellient/vault-helper/pkg/vault"
 )
 
 const (

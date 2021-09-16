@@ -10,7 +10,7 @@ import (
 	"context"
 	"os"
 
-	"cli"
+	"github.com/Indellient/vault-helper/pkg/cli"
 )
 
 // These vars describe buildtime variables that are emitted when help or version info is printed.
