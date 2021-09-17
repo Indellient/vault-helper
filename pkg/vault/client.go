@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"gopkg.in/resty.v1"
-	"logger"
 	"net"
 	"net/http"
 	"net/url"
@@ -16,6 +15,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/Indellient/vault-helper/pkg/logger"
 )
 
 var (
@@ -74,16 +75,16 @@ func (v *Client) ExtendedValidate() error {
 
 	// Validate that SystemHealth is okay, this vault instance is ready
 	v.SystemHealth.Reload(v)
-	if v.SystemHealth.Ready() != true {
-		if v.SystemHealth.GetInitialized() != true {
+	if ! v.SystemHealth.Ready() {
+		if ! v.SystemHealth.GetInitialized() {
 			return errors.New("Expected vault to be initialized")
 		}
 
-		if v.SystemHealth.GetSealed() == true {
+		if v.SystemHealth.GetSealed() {
 			return errors.New("Expected vault to be unsealed")
 		}
 
-		if v.SystemHealth.GetStandby() == true {
+		if v.SystemHealth.GetStandby() {
 			return errors.New("Expected vault to be active node")
 		}
 
@@ -133,7 +134,7 @@ func (v *Client) checkResponseForErrors(response *resty.Response, responseError 
 	}
 
 	// Validate the response HTTP status code against validStatusCodes[]
-	if v.contains(response.StatusCode(), validStatusCodes) != true {
+	if ! v.contains(response.StatusCode(), validStatusCodes) {
 		logger.Fatalf("Response %v was not one of %v: %v", response.StatusCode(), validStatusCodes, response.Error())
 	}
 }
@@ -264,7 +265,7 @@ func (v *Client) ValidateFetchSecret() error {
 	// Initialize and attempt to parse the token replacement
 	_, err := template.New("secrets").Delims(LeftTemplateDelim, RightTemplateDelim).Parse(v.Selector)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Could not parse template selector '%v': %v", v.Selector, err))
+		return fmt.Errorf("Could not parse template selector '%v': %v", v.Selector, err)
 	}
 
 	return nil
@@ -330,7 +331,7 @@ func (v *Client) ValidateParseFile() error {
 
 	// Make sure file is non-empty and accessible
 	if _, err := os.Stat(v.File); os.IsNotExist(err) {
-		return errors.New(fmt.Sprintf("The file to parse %v either does not exist or cannot be accessed: %v", v.File, err))
+		return fmt.Errorf("The file to parse %v either does not exist or cannot be accessed: %v", v.File, err)
 	}
 
 	return nil

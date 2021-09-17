@@ -3,7 +3,8 @@ package vault_test
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"vault"
+
+	"github.com/Indellient/vault-helper/pkg/vault"
 )
 
 var (

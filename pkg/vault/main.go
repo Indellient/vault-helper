@@ -2,7 +2,8 @@ package vault
 
 import (
 	"context"
-	"logger"
+
+	"github.com/Indellient/vault-helper/pkg/logger"
 )
 
 // Creates, validates, and initializes a new Client with specified params
